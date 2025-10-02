@@ -1,4 +1,5 @@
 
+'use client'
 interface LoginModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -7,11 +8,14 @@ function LoginModal({ isOpen, onClose }: LoginModalProps) {
     if (!isOpen) return null;
 
     const handleEHerkenningLogin = () => {
+      localStorage.setItem('username', 'Pieter');
         console.log('Redirecting to eHerkenning authentication...');
         window.location.href = '/account';
+
     };
 
     const handleDigiDLogin = () => {
+      localStorage.setItem('username', 'Pieter');
         console.log('Redirecting to DigiD authentication...');
         window.location.href = '/account';
     };

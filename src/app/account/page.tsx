@@ -6,8 +6,20 @@ import {
   Heading,
   Paragraph
 } from "@rijkshuisstijl-community/components-react";
+import { useRouter } from 'next/navigation'; // Next.js 13+ app router
+
 
 export default function AccountPage() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem('username');
+    router.push('/');
+  };
+
+  const handleDashboard = () => {
+    router.push('/');
+  };
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -245,13 +257,13 @@ export default function AccountPage() {
           </Heading>
           
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <Button appearance="primary-action-button">
+            <Button appearance="primary-action-button" onClick={handleDashboard}>
               Dashboard
             </Button>
             <Button>
               Instellingen
             </Button>
-            <Button style={{ marginLeft: 'auto' }}>
+            <Button style={{ marginLeft: 'auto' }} onClick={handleLogout}>
               Uitloggen
             </Button>
           </div>

@@ -20,7 +20,14 @@ export default function SubsidiesDashboard() {
     const [filterSector, setFilterSector] = useState('all');
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isVoorMijActive, setIsVoorMijActive] = useState(false);
+    const [username, setUsername] = useState<string | null>(null);
 
+    useEffect(() => {
+        const storedUsername = localStorage.getItem('username');
+        if (storedUsername) {
+            setUsername(storedUsername);
+        }
+    }, []);
 
     useEffect(() => {
         async function loadSubsidies() {
@@ -104,43 +111,14 @@ export default function SubsidiesDashboard() {
                                 Totaal beschikbare subsidies: {subsidies.length}
                             </p>
                         </div>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            {/* Inloggen */}
-                            <button
-                                onClick={() => setIsLoginModalOpen(true)}
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    background: '#154273',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    fontSize: '1rem',
-                                    fontWeight: '500',
-                                    cursor: 'pointer',
-                                    transition: 'background 0.2s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = '#0f3154'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = '#154273'}
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                                    <polyline points="10 17 15 12 10 7"></polyline>
-                                    <line x1="15" y1="12" x2="3" y2="12"></line>
-                                </svg>
-                                Inloggen
-                            </button>
-
+                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                             {/* Voor mij */}
                             <button
                                 onClick={() => {
-                                    console.log('Filtering for: duur');
                                     setIsLoginModalOpen(false);
-                                    setSearchTerm('duur'); // Search in titles instead
-                                    setFilterSector('all'); // Reset sector filter
-                                    setIsVoorMijActive(true)
+                                    setSearchTerm('duur');
+                                    setFilterSector('all');
+                                    setIsVoorMijActive(true);
                                 }}
                                 style={{
                                     padding: '0.75rem 1.5rem',
@@ -162,7 +140,54 @@ export default function SubsidiesDashboard() {
                                 Voor mij
                             </button>
 
+                            {/* If logged in show account icon, else show login */}
+                            {username ? (
+                                <button
+                                    onClick={() => window.location.href = '/account'}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        fontSize: '1rem',
+                                        color: '#154273'
+                                    }}
+                                >
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" strokeWidth="2">
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                        <path d="M5.5 21a8.38 8.38 0 0 1 13 0"></path>
+                                    </svg>
+                                    <span>{username}</span>
+                                </button>
+                            ) : (
+
+                                <button
+                                    onClick={() => setIsLoginModalOpen(true)}
+                                    style={{
+                                        padding: '0.75rem 1.5rem',
+                                        background: '#154273',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        fontSize: '1rem',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.2s ease',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = '#0f3154'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = '#154273'}
+                                >
+                                    Inloggen
+                                </button>
+                            )}
                         </div>
+
                     </div>
                 </div>
 
