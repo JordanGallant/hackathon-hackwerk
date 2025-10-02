@@ -19,6 +19,8 @@ export default function SubsidiesDashboard() {
     const [filterType, setFilterType] = useState('all');
     const [filterSector, setFilterSector] = useState('all');
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isVoorMijActive, setIsVoorMijActive] = useState(false);
+
 
     useEffect(() => {
         async function loadSubsidies() {
@@ -138,6 +140,7 @@ export default function SubsidiesDashboard() {
                                     setIsLoginModalOpen(false);
                                     setSearchTerm('duur'); // Search in titles instead
                                     setFilterSector('all'); // Reset sector filter
+                                    setIsVoorMijActive(true)
                                 }}
                                 style={{
                                     padding: '0.75rem 1.5rem',
@@ -188,8 +191,11 @@ export default function SubsidiesDashboard() {
                                 id="search"
                                 type="text"
                                 placeholder="Zoek subsidies..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={isVoorMijActive ? '' : searchTerm} // Hide text when Voor mij is active
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value);
+                                    setIsVoorMijActive(false); // Reset when user types manually
+                                }}
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
