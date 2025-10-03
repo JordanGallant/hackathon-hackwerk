@@ -1,18 +1,35 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { 
   Button,
   Heading,
   Paragraph
 } from "@rijkshuisstijl-community/components-react";
 
+interface AIInsights {
+  matchScore: number;
+  likelihood: string;
+  recommendations: string[];
+  matchedRequirements: string[];
+  missingRequirements: string[];
+  topSubsidies?: Array<{
+    subsidyId: string;
+    subsidyName: string;
+    matchScore: number;
+    estimatedBenefit: string;
+    nextSteps: string;
+    priority: string;
+  }>;
+  keyInsights?: string[];
+}
+
 export default function SubsidyInfoPage() {
   const router = useRouter();
-
-  const handleBack = () => {
-    router.push('/');
-  };
+  const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Pieter's data
   const userData = {
@@ -24,24 +41,39 @@ export default function SubsidyInfoPage() {
     address: "Hilvertsweg 281 1214JG Hilversum"
   };
 
-  // AI Insights (dummy data)
-  const aiInsights = {
-    matchScore: 72,
-    likelihood: "Goed",
-    recommendations: [
-      "Zorg ervoor dat uw landbouwactiviteiten voldoen aan de milieueisen",
-      "Bereid documentatie voor over uw duurzame praktijken",
-      "Check of uw bedrijfsgrootte binnen de gestelde limieten valt"
-    ],
-    matchedRequirements: [
-      "Actief in de landbouwsector",
-      "Geregistreerd bij KVK",
-      "Focus op duurzaamheid"
-    ],
-    missingRequirements: [
-      "Mogelijk ontbrekende landbouwregistratie",
-      "Nog niet duidelijk: minimale bedrijfsomvang"
-    ]
+  useEffect(() => {
+    fetchInsights();
+  }, []);
+
+  const fetchInsights = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/insights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userData }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch insights');
+      }
+
+      const data = await response.json();
+      setAiInsights(data);
+    } catch (err) {
+      console.error('Error fetching insights:', err);
+      setError('Kon AI-inzichten niet laden. Probeer het opnieuw.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBack = () => {
+    router.push('/');
   };
 
   return (
@@ -84,79 +116,143 @@ export default function SubsidyInfoPage() {
             </Heading>
           </div>
 
-          {/* Match Score */}
-          <div style={{ marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-              <Paragraph style={{ fontSize: '0.875rem', margin: 0, opacity: 0.9 }}>
-                Match score
+          {loading && (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <div style={{ 
+                display: 'inline-block',
+                width: '40px',
+                height: '40px',
+                border: '4px solid rgba(255, 255, 255, 0.3)',
+                borderTopColor: 'white',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }}></div>
+              <Paragraph style={{ marginTop: '1rem', opacity: 0.9 }}>
+                AI analyseert uw profiel...
               </Paragraph>
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                borderRadius: '12px',
-                padding: '0.25rem 0.75rem',
-                fontSize: '0.875rem',
-                fontWeight: '600'
-              }}>
-                {aiInsights.likelihood}
-              </div>
+              <style>{`
+                @keyframes spin {
+                  to { transform: rotate(360deg); }
+                }
+              `}</style>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{
-                flex: 1,
-                height: '12px',
-                background: 'rgba(255, 255, 255, 0.2)',
-                borderRadius: '6px',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  width: `${aiInsights.matchScore}%`,
-                  height: '100%',
-                  background: aiInsights.matchScore >= 70 ? '#4ade80' : aiInsights.matchScore >= 50 ? '#fbbf24' : '#ef4444',
-                  borderRadius: '6px',
-                  transition: 'width 0.5s ease'
-                }}></div>
-              </div>
-              <Paragraph style={{ fontSize: '1.5rem', fontWeight: '700', margin: 0 }}>
-                {aiInsights.matchScore}%
-              </Paragraph>
+          )}
+
+          {error && (
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.2)',
+              border: '1px solid rgba(239, 68, 68, 0.5)',
+              borderRadius: '6px',
+              padding: '1rem',
+              marginBottom: '1rem'
+            }}>
+              <Paragraph style={{ margin: 0, marginBottom: '0.5rem' }}>⚠️ {error}</Paragraph>
+              <Button 
+                onClick={fetchInsights}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                Opnieuw proberen
+              </Button>
             </div>
-          </div>
+          )}
 
-          {/* Matched Requirements */}
-          <div style={{ marginBottom: '1.5rem' }}>
-            <Paragraph style={{ fontSize: '0.875rem', marginBottom: '0.75rem', opacity: 0.9 }}>
-              ✓ Voldoet aan
-            </Paragraph>
-            <ul style={{ margin: 0, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {aiInsights.matchedRequirements.map((req, index) => (
-                <li key={index} style={{ fontSize: '0.9375rem' }}>{req}</li>
-              ))}
-            </ul>
-          </div>
+          {!loading && !error && aiInsights && (
+            <>
+              {/* Match Score */}
+              <div style={{ marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                  <Paragraph style={{ fontSize: '0.875rem', margin: 0, opacity: 0.9 }}>
+                    Match score
+                  </Paragraph>
+                  <div style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '12px',
+                    padding: '0.25rem 0.75rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '600'
+                  }}>
+                    {aiInsights.likelihood}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{
+                    flex: 1,
+                    height: '12px',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '6px',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      width: `${aiInsights.matchScore}%`,
+                      height: '100%',
+                      background: aiInsights.matchScore >= 70 ? '#4ade80' : aiInsights.matchScore >= 50 ? '#fbbf24' : '#ef4444',
+                      borderRadius: '6px',
+                      transition: 'width 0.5s ease'
+                    }}></div>
+                  </div>
+                  <Paragraph style={{ fontSize: '1.5rem', fontWeight: '700', margin: 0 }}>
+                    {aiInsights.matchScore}%
+                  </Paragraph>
+                </div>
+              </div>
 
-          {/* Missing Requirements */}
-          <div style={{ marginBottom: '1.5rem' }}>
-            <Paragraph style={{ fontSize: '0.875rem', marginBottom: '0.75rem', opacity: 0.9 }}>
-              ⚠ Aandachtspunten
-            </Paragraph>
-            <ul style={{ margin: 0, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {aiInsights.missingRequirements.map((req, index) => (
-                <li key={index} style={{ fontSize: '0.9375rem' }}>{req}</li>
-              ))}
-            </ul>
-          </div>
+              {/* Matched Requirements */}
+              {aiInsights.matchedRequirements && aiInsights.matchedRequirements.length > 0 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <Paragraph style={{ fontSize: '0.875rem', marginBottom: '0.75rem', opacity: 0.9 }}>
+                    ✓ Voldoet aan
+                  </Paragraph>
+                  <ul style={{ margin: 0, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {aiInsights.matchedRequirements.map((req, index) => (
+                      <li key={index} style={{ fontSize: '0.9375rem' }}>{req}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-          {/* Recommendations */}
-          <div>
-            <Paragraph style={{ fontSize: '0.875rem', marginBottom: '0.75rem', opacity: 0.9 }}>
-              💡 Aanbevelingen
-            </Paragraph>
-            <ul style={{ margin: 0, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {aiInsights.recommendations.map((rec, index) => (
-                <li key={index} style={{ fontSize: '0.9375rem' }}>{rec}</li>
-              ))}
-            </ul>
-          </div>
+              {/* Missing Requirements */}
+              {aiInsights.missingRequirements && aiInsights.missingRequirements.length > 0 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <Paragraph style={{ fontSize: '0.875rem', marginBottom: '0.75rem', opacity: 0.9 }}>
+                    ⚠ Aandachtspunten
+                  </Paragraph>
+                  <ul style={{ margin: 0, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {aiInsights.missingRequirements.map((req, index) => (
+                      <li key={index} style={{ fontSize: '0.9375rem' }}>{req}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Recommendations */}
+              {aiInsights.recommendations && aiInsights.recommendations.length > 0 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <Paragraph style={{ fontSize: '0.875rem', marginBottom: '0.75rem', opacity: 0.9 }}>
+                    💡 Aanbevelingen
+                  </Paragraph>
+                  <ul style={{ margin: 0, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {aiInsights.recommendations.map((rec, index) => (
+                      <li key={index} style={{ fontSize: '0.9375rem' }}>{rec}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Key Insights */}
+              {aiInsights.keyInsights && aiInsights.keyInsights.length > 0 && (
+                <div style={{ paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                  <Paragraph style={{ fontSize: '0.875rem', marginBottom: '0.75rem', opacity: 0.9 }}>
+                    🎯 Belangrijkste inzichten
+                  </Paragraph>
+                  <ul style={{ margin: 0, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {aiInsights.keyInsights.map((insight, index) => (
+                      <li key={index} style={{ fontSize: '0.9375rem' }}>{insight}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Subsidy Info Card */}
