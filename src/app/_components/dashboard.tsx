@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import LoginModal from './login';
+import { useRouter } from 'next/navigation';
+
 
 interface Subsidy {
     title: string;
@@ -12,6 +14,8 @@ interface Subsidy {
 }
 
 export default function SubsidiesDashboard() {
+      const router = useRouter();
+
     const [subsidies, setSubsidies] = useState<Subsidy[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -21,6 +25,8 @@ export default function SubsidiesDashboard() {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isVoorMijActive, setIsVoorMijActive] = useState(false);
     const [username, setUsername] = useState<string | null>(null);
+    const [showInfo, setShowInfo] = useState(false);
+
 
     useEffect(() => {
         const storedUsername = localStorage.getItem('username');
@@ -401,6 +407,45 @@ export default function SubsidiesDashboard() {
                                     <line x1="10" y1="14" x2="21" y2="3"></line>
                                 </svg>
                             </a>
+                            <button
+                                onClick={() => router.push('/info')}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.4rem',
+                                    marginTop: '0.75rem',
+                                    fontSize: '0.9rem',
+                                    fontWeight: '500',
+                                    color: '#154273',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    textDecoration: 'none',
+                                    transition: 'color 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.color = '#0f3154';
+                                    e.currentTarget.style.textDecoration = 'underline';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.color = '#154273';
+                                    e.currentTarget.style.textDecoration = 'none';
+                                }}
+                            >
+                                Meer informatie
+                                <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    style={{ marginLeft: '2px' }}
+                                >
+                                    <path d="M9 18l6-6-6-6" />
+                                </svg>
+                            </button>
+
                         </article>
                     ))}
                 </div>
