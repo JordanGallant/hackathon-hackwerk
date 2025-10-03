@@ -24,8 +24,8 @@ export default function Nav() {
         {/* Right side: Buttons */}
         <div style={{ display: "flex", gap: "1rem" }}>
           <Button onClick={() => router.push("/")}>Home</Button>
-          <Button onClick={() => router.push("/subsidies")}>Subsidies</Button>
-          <Button onClick={() => router.push("/contact")}>Contact</Button>
+          <Button onClick={() => router.push("/")}>Subsidies</Button>
+          <Button onClick={() => router.push("/")}>Contact</Button>
         </div>
       </nav>
     </header>

@@ -26,7 +26,6 @@ export default function SubsidiesDashboard() {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isVoorMijActive, setIsVoorMijActive] = useState(false);
     const [username, setUsername] = useState<string | null>(null);
-    const [showInfo, setShowInfo] = useState(false);
 
 
     useEffect(() => {

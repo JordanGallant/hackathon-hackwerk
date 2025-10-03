@@ -10,8 +10,57 @@ const client = new AzureOpenAI({
   endpoint: process.env.AZURE_OPENAI_ENDPOINT!,
 });
 
+// Type definitions
+interface SubsidyRequirements {
+  sector?: string[];
+  hasKvk?: boolean;
+  sustainableFocus?: boolean;
+  minBudget?: number;
+  maxEmployees?: number | null;
+  conductingRD?: boolean;
+  location?: string;
+}
+
+interface Subsidy {
+  id: string;
+  name: string;
+  description: string;
+  requirements: SubsidyRequirements;
+  budget: string;
+  conditions: string[];
+}
+
+interface UserData {
+  name: string;
+  sector?: string;
+  hasKvk?: boolean;
+  sustainableFocus?: boolean;
+  employees?: number;
+  conductingRD?: boolean;
+  [key: string]: unknown; // Allow additional properties
+}
+
+interface TopSubsidy {
+  subsidyId: string;
+  subsidyName: string;
+  matchScore: number;
+  estimatedBenefit: string;
+  nextSteps: string;
+  priority: 'hoog' | 'middel' | 'laag';
+}
+
+interface Insights {
+  matchScore: number;
+  likelihood: 'Uitstekend' | 'Goed' | 'Redelijk' | 'Laag';
+  recommendations: string[];
+  matchedRequirements: string[];
+  missingRequirements: string[];
+  topSubsidies: TopSubsidy[];
+  keyInsights: string[];
+}
+
 // Subsidy data (you can move this to a database later)
-const subsidies = [
+const subsidies: Subsidy[] = [
   {
     id: 'glb-2025',
     name: 'Subsidies Gemeenschappelijk landbouwbeleid (GLB)',
@@ -75,7 +124,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function generateInsights(userData: any, subsidies: any[]) {
+async function generateInsights(userData: UserData, subsidies: Subsidy[]): Promise<Insights> {
   const prompt = `Je bent een subsidie-adviseur die een gebruikersprofiel analyseert voor subsidiemogelijkheden.
 
 GEBRUIKERSPROFIEL:
@@ -136,7 +185,7 @@ Wees specifiek en praktisch. Focus op concrete stappen die ${userData.name} kan 
       response_format: { type: "json_object" }
     });
 
-    const insights = JSON.parse(response.choices[0].message.content || '{}');
+    const insights = JSON.parse(response.choices[0].message.content || '{}') as Insights;
 
     // Log usage for cost tracking
     const usage = response.usage;
