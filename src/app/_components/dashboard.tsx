@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import LoginModal from './login';
+import Nav from './ui/nav';
 import { useRouter } from 'next/navigation';
 
 
@@ -105,9 +106,13 @@ export default function SubsidiesDashboard() {
     }
 
     return (
+        <>
+        <Nav/>
         <div style={{ minHeight: '100vh', padding: '2rem', background: '#f5f5f5' }}>
+            
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
                 {/* Header */}
+               
                 <div style={{ marginBottom: '2rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                         <div>
@@ -466,5 +471,6 @@ export default function SubsidiesDashboard() {
                 onClose={() => setIsLoginModalOpen(false)}
             />
         </div>
+        </>
     );
 }
